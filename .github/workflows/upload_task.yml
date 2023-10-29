@@ -1,5 +1,4 @@
 name: Github Upload Task
-run-name: Upload to Extension API by ${{ github.actor }}
 on: 
     push:
         branches:
