@@ -29,8 +29,8 @@ jobs:
         
         - name: Write changed files to file
           run: |
-            echo "${{ steps.changed_files.outputs.all_changed_files }}" > added_modified_commits.txt
-            cat added_modified_commits.txt
+            echo "${{ steps.changed_files.outputs.all_changed_files }}" > changed_files.txt
+            cat changed_files.txt
 
         # - name: Display Python version
         #   run: python -c "import sys; print(sys.version)"
