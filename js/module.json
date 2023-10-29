@@ -1,0 +1,20 @@
+{
+    "name": "Javascript Module",
+    "steps": [
+        {
+            "name": "Install Dependencies",
+            "cmd": "pnpm install"
+        },
+        {
+            "name": "Build",
+            "cmd": "pnpm run build"
+        }
+    ],
+    "files": [
+        {
+            "path": "build/test.js",
+            "srcPath": "src/test.ts",
+            "uuid": "123adf123"
+        }
+    ]
+}

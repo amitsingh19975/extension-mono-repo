@@ -1,0 +1,53 @@
+name: Github Upload Task
+run-name: Upload to Extension API by ${{ github.actor }}
+on: 
+    push:
+        branches:
+        - master
+        paths-ignore:
+        - 'README.md'
+        - 'LICENSE'
+        - '.gitignore'
+jobs:
+    build:
+        runs-on: ubuntu-22.04
+        steps:
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        # - uses: actions/setup-node@v3
+        #   with:
+        #     node-version: '16.x'
+        # - uses: pnpm/action-setup@v2
+        #   with:
+        #     version: 8
+        # - uses: actions/setup-python@v4
+        #   with:
+        #     python-version: '>=3.11'
+        #     architecture: 'x64'
+        
+        - uses: tj-actions/changed-files@v40
+          id: changed_files
+        
+        - name: Write changed files to file
+          run: |
+            echo "${{ steps.changed_files.outputs.added_modified }}" > added_modified_commits.txt
+            cat added_modified_commits.txt
+
+        # - name: Display Python version
+        #   run: python -c "import sys; print(sys.version)"
+        
+        # - name: Setting up Python environment
+        #   run: |
+        #     python -m pip install --upgrade pip
+        #     python -m venv env
+        
+        # - name: Activate Python environment
+        #   run: source env/bin/activate
+
+        # - name: Install Python dependencies
+        #   run: pip install -r requirements.txt
+        
+        # - name: Running Python script
+        #   run: python main.py
