@@ -13,8 +13,6 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
         - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
 
         # - uses: actions/setup-node@v3
         #   with:
@@ -32,7 +30,7 @@ jobs:
         
         - name: Write changed files to file
           run: |
-            echo "${{ steps.changed_files.outputs.added_modified }}" > added_modified_commits.txt
+            echo "${{ steps.changed_files.outputs.all_changed_files }}" > added_modified_commits.txt
             cat added_modified_commits.txt
 
         # - name: Display Python version
