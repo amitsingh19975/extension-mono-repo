@@ -52,7 +52,6 @@ def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path("."))
         for line in lines:
             parse_space_separated_paths_escape(line, paths, resolved_base_path)
 
-    print(f'Changed files: {paths}')
     return paths
 
 def get_changed_files_from_module_helper(diagnostic: DiagnosticBase, module: Module, changed_source_files: List[Path], changed_files: MutableSet[DependencyFiles]) -> None:
@@ -70,7 +69,6 @@ def get_changed_files_from_module_helper(diagnostic: DiagnosticBase, module: Mod
 
 def get_changed_files_from_module(diagnostic: DiagnosticBase, module: Module, changed_source_files: List[Path]) -> Set[DependencyFiles]:
     changed_files: MutableSet[DependencyFiles] = set()
-    print(f'Changed source files: {changed_source_files}')
     get_changed_files_from_module_helper(diagnostic, module, changed_source_files, changed_files)
     diagnostic.add(DiagnosticLocation.from_module(module), DiagnosticKind.INFO, f'Found {len(changed_files)} changed files')
     return cast(Set, changed_files)
