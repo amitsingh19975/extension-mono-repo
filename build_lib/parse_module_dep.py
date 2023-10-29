@@ -37,21 +37,23 @@ class DependencyFiles:
         
         buildPath = base_path / json_data['path']
 
-        if 'srcPath' not in json_data:
-            raise ValueError(f'No "srcPath" in dependency file: "{module_path}"\n{json_data}')
-        
-        if type(json_data['srcPath']) != str:
-            raise ValueError(f'type of "srcPath" must be a "str", but found "{type(json_data["srcPath"])}": {module_path}\n{json_data}')
-        
-        srcPath = base_path / json_data['srcPath']
+        srcPath = buildPath
 
-        if not srcPath.exists():
-            raise FileNotFoundError(f'File not found: {srcPath}')
-        
-        if not srcPath.is_file():
-            raise ValueError(f'Not a file: {srcPath}')
+        if 'srcPath' in json_data:
+            if type(json_data['srcPath']) != str:
+                raise ValueError(f'type of "srcPath" must be a "str", but found "{type(json_data["srcPath"])}": {module_path}\n{json_data}')
+            srcPath = base_path / json_data['srcPath']
+
+            if not srcPath.exists():
+                raise FileNotFoundError(f'File not found: {srcPath}')
+            
+            if not srcPath.is_file():
+                raise ValueError(f'Not a file: {srcPath}')
 
         return DependencyFiles(uuid = uuid, buildPath = buildPath, srcPath = srcPath)
+    
+    def __hash__(self) -> int:
+        return hash(self.srcPath)
 
 @dataclass
 class DependencyCmds:
@@ -168,7 +170,7 @@ class Module:
             if type(json_data['files']) != list:
                 raise ValueError(f'type of "files" must be a "list", but found "{type(json_data["files"])}": {path}')
             
-            files = [DependencyFiles.from_json(base_path, file) for file in json_data['files']] 
+            files = [DependencyFiles.from_json(resolved_base_path, file) for file in json_data['files']] 
         
         module = Module(name = name, path = path, resolve_base_path = resolved_base_path, includes = includes, steps = steps, files = files)
         return module

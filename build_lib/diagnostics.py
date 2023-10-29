@@ -24,10 +24,13 @@ class DiagnosticKind(Enum):
 @dataclass
 class DiagnosticLocation:
     path: Path
-    prefix: Union[DependencyCmds, Module]
+    prefix: Union[DependencyCmds, Module, None]
     resolved_base_path: Path
 
     def __str__(self) -> str:
+        if self.prefix is None:
+            return f'("{self.path}")'
+        
         if type(self.prefix) == Module:
             return f'[{Style.BRIGHT}{Fore.MAGENTA}{self.prefix.name}{Style.RESET_ALL}]("{self.path}")'
         
