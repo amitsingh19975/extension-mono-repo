@@ -3,7 +3,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import IO, List, Optional, Union, cast
 from .parse_module_dep import DependencyCmds, Module
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 
 class DiagnosticKind(Enum):
     ERROR = auto()
@@ -46,18 +46,20 @@ class DiagnosticLocation:
 
 @dataclass
 class DiagnosticMessage:
-    location: DiagnosticLocation
+    location: Optional[DiagnosticLocation]
     message: str
     kind: DiagnosticKind
 
     def __str__(self) -> str:
+        if self.location is None:
+            return f'{self.kind}: {self.message}'
         return f'{self.kind} {self.location}: {self.message}'
 
 class DiagnosticBase:
     def add_message(self, message: DiagnosticMessage) -> None:
         raise NotImplementedError
     
-    def add(self, location: DiagnosticLocation, kind: DiagnosticKind, message: str) -> None:
+    def add(self, location: Optional[DiagnosticLocation], kind: DiagnosticKind, message: str) -> None:
         self.add_message(DiagnosticMessage(location = location, message = message, kind = kind))
     
     def has_errors(self) -> bool:
@@ -76,7 +78,7 @@ class StreamDiagnostics(DiagnosticBase):
     def add_message(self, message: DiagnosticMessage) -> None:
         self.writer.write(f'{message}\n')
     
-    def add(self, location: DiagnosticLocation, kind: DiagnosticKind, message: str) -> None:
+    def add(self, location: Optional[DiagnosticLocation], kind: DiagnosticKind, message: str) -> None:
         self.add_message(DiagnosticMessage(location = location, message = message, kind = kind))
 
 class ListDiagnostics(DiagnosticBase):
@@ -86,7 +88,7 @@ class ListDiagnostics(DiagnosticBase):
     def add_message(self, message: DiagnosticMessage) -> None:
         self.messages.append(message)
     
-    def add(self, location: DiagnosticLocation, kind: DiagnosticKind, message: str) -> None:
+    def add(self, location: Optional[DiagnosticLocation], kind: DiagnosticKind, message: str) -> None:
         self.add_message(DiagnosticMessage(location = location, message = message, kind = kind))
     
     def has_errors(self) -> bool:
