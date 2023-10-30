@@ -1,8 +1,29 @@
 from pathlib import Path
-from typing import List, MutableSet, Set, cast
-
+import subprocess
+from typing import Any, List, MutableSet, Optional, Set, cast
 from .parse_module_dep import DependencyFiles, Module
 from .diagnostics import DiagnosticBase, DiagnosticKind, DiagnosticLocation
+from git import Repo
+
+REPO_PATH = Path(__file__).parent.parent
+git_repo = Repo(REPO_PATH)
+
+def get_git_changed_files_between_hashes(diagnostic: DiagnosticBase, last_hash: str) -> List[str]:
+    res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, 'HEAD'])
+    if bytes == type(res):
+        try:
+            res = res.decode('utf-8')
+        except UnicodeDecodeError:
+            diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to decode git diff')
+            return []
+    
+    if type(res) == str:
+        return res.strip().splitlines()
+        
+    diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to get git diff')
+    return []
+    # return pipe.stdout.decode('utf-8').splitlines()
+    
 
 def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_base_path: Path) -> None:
     path = ''
@@ -31,26 +52,45 @@ def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_ba
         if path_buf.exists() and path_buf.is_file():
             paths.append(path_buf)
 
-
-
-def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path(".")) -> List[Path]:
-    file_path = base_path / 'changed_files.txt'
-    location = DiagnosticLocation(path=file_path, prefix=None, resolved_base_path=base_path.resolve())
-    if not file_path.exists():
-        diagnostic.add(location, DiagnosticKind.ERROR, f'File {file_path} does not exist')
-        return []
+def get_git_first_commit_hash() -> str:
+    res: Any = git_repo.git.execute(['git', 'rev-list', '--max-parents=0', 'HEAD'])
+    if bytes == type(res):
+        try:
+            res = res.decode('utf-8')
+        except UnicodeDecodeError:
+            return 'HEAD'
     
-    if not file_path.is_file():
-        diagnostic.add(location, DiagnosticKind.ERROR, f'File {file_path} is not a file')
-        return []
-    
+    if type(res) == str:
+        return res.strip()
+        
+    return 'HEAD'
+
+def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path(".")) -> Optional[List[Path]]:    
     resolved_base_path = base_path.resolve()
     paths: List[Path] = []
+    cache_path = resolved_base_path / 'cache'
+    
+    if not cache_path.exists():
+        cache_path.mkdir(parents = True)
 
-    with file_path.open('r') as f:
-        lines = f.readlines()
-        for line in lines:
-            parse_space_separated_paths_escape(line, paths, resolved_base_path)
+    last_hash_path = cache_path / 'last_hash.txt'
+    last_hash = get_git_first_commit_hash()
+    print(f'First Hash: {last_hash}')
+
+    if last_hash_path.exists():
+        with last_hash_path.open('r') as f:
+            last_hash = f.read().strip()
+        print(f'Last Hash: {last_hash}')
+
+    files = get_git_changed_files_between_hashes(diagnostic, last_hash)
+    for file in files:
+        parse_space_separated_paths_escape(file, paths, resolved_base_path)
+
+    with last_hash_path.open('w') as f:
+        f.write(git_repo.head.commit.hexsha)
+
+    print(f'Found {len(paths)} changed files')
+    print(f'Changed Files: {paths}')
 
     return paths
 
