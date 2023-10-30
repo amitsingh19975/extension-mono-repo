@@ -10,21 +10,24 @@ REPO_PATH = Path(__file__).parent.parent
 git_repo = Repo(REPO_PATH)
 
 def get_git_changed_files_between_hashes(diagnostic: DiagnosticBase, last_hash: str) -> List[str]:
-
     print(f'get_git_changed_files_between_hashes => Last Hash: {last_hash} | {argv[1] if len(argv) > 1 else None}')
     current_hash = argv[1] if len(argv) > 1 else git_repo.head.commit.hexsha
-    res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, current_hash])
-    if bytes == type(res):
-        try:
-            res = res.decode('utf-8')
-        except UnicodeDecodeError:
-            diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to decode git diff')
-            return []
-    
-    if type(res) == str:
-        return res.strip().splitlines()
+    try:
+        res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, current_hash])
+        if bytes == type(res):
+            try:
+                res = res.decode('utf-8')
+            except UnicodeDecodeError:
+                diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to decode git diff')
+                return []
         
-    diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to get git diff')
+        if type(res) == str:
+            return res.strip().splitlines()
+            
+        diagnostic.add(None, DiagnosticKind.ERROR, f'Failed to get git diff')
+    except Exception as e:
+        print(e)
+        pass
     return []
     # return pipe.stdout.decode('utf-8').splitlines()
     
