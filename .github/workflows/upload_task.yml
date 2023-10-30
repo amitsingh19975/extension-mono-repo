@@ -12,6 +12,8 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 3
 
         - uses: actions/setup-node@v3
           with:
@@ -28,6 +30,7 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: cache-artifact
+          continue-on-error: true
 
         - name: Display Python version
           run: python -c "import sys; print(sys.version)"
