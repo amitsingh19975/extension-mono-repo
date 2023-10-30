@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Union
 import json
+from hashlib import md5
 
 BASE_PATH = Path(__file__).parent.parent
 
@@ -18,6 +19,7 @@ class DependencyFiles:
     build_path: Path
     src_path: Path
     base_path: Path
+    checksum: str
 
     @staticmethod
     def from_json(base_path: Path, json_data: dict) -> 'DependencyFiles':
@@ -55,7 +57,12 @@ class DependencyFiles:
             
             srcPath = parent_path / Path(json_data['srcPath'])
 
-        return DependencyFiles(uuid = uuid, build_path = buildPath, src_path = srcPath, base_path = BASE_PATH)
+        if not srcPath.exists():
+            raise FileNotFoundError(f'File not found: {srcPath}')
+        
+        checksum = md5(srcPath.read_bytes()).hexdigest()
+        
+        return DependencyFiles(uuid = uuid, build_path = buildPath, src_path = srcPath, base_path = BASE_PATH, checksum = checksum)
     
     def __hash__(self) -> int:
         return hash(self.src_path)
