@@ -28,10 +28,10 @@ jobs:
         
         - name: Download a single artifact
           uses: actions/download-artifact@v3
-          with:
-            name: cache-artifact
-            path: cache/
           continue-on-error: true
+
+        - name: List Files
+          run: ls -R
 
         - name: Display Python version
           run: python -c "import sys; print(sys.version)"
