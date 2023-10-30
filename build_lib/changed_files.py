@@ -1,16 +1,14 @@
 from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Any, List, MutableMapping, MutableSet, Optional, Set, cast
+from typing import List, MutableMapping, MutableSet, Optional, Set, cast
 from .parse_module_dep import DependencyFiles, Module
 from .diagnostics import DiagnosticBase, DiagnosticKind, DiagnosticLocation
-from git import Repo
 from hashlib import md5
 from os import environ
 import asyncio
 
 REPO_PATH = Path(__file__).parent.parent
-git_repo = Repo(REPO_PATH)
 CHECKSUM_FILE_NAME = 'checksums.json'
 FILE_CHANGED_PATH = REPO_PATH / CHECKSUM_FILE_NAME
 
@@ -135,9 +133,6 @@ def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_ba
             paths.append(path_buf)
 
 def parse_cached_file_checksums(diagnostic: DiagnosticBase) -> Optional[List[FileChecksum]]:    
-    if not git_repo.is_dirty():
-        return []
-    
     return parse_cached_file_checksum_from_file(diagnostic)
 
 def get_changed_files_from_module_helper(diagnostic: DiagnosticBase, module: Module, changed_source_files: Optional[List[FileChecksum]], changed_files: MutableSet[DependencyFiles]) -> None:
