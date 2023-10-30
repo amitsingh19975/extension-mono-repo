@@ -1,15 +1,17 @@
 from pathlib import Path
-import subprocess
-from typing import Any, List, MutableSet, Optional, Set, cast
+from typing import Any, List, MutableSet, Set, cast
 from .parse_module_dep import DependencyFiles, Module
 from .diagnostics import DiagnosticBase, DiagnosticKind, DiagnosticLocation
 from git import Repo
+from sys import argv
 
 REPO_PATH = Path(__file__).parent.parent
 git_repo = Repo(REPO_PATH)
 
 def get_git_changed_files_between_hashes(diagnostic: DiagnosticBase, last_hash: str) -> List[str]:
-    res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, 'HEAD'])
+    print(f'get_git_changed_files_between_hashes => Last Hash: {last_hash} | {argv[1]}')
+    current_hash = argv[1] if len(argv) > 1 else git_repo.head.commit.hexsha
+    res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, current_hash])
     if bytes == type(res):
         try:
             res = res.decode('utf-8')
@@ -65,7 +67,7 @@ def get_git_first_commit_hash() -> str:
         
     return 'HEAD'
 
-def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path(".")) -> Optional[List[Path]]:    
+def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path(".")) -> List[Path]:    
     resolved_base_path = base_path.resolve()
     paths: List[Path] = []
     cache_path = resolved_base_path / 'cache'
