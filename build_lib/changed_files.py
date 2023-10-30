@@ -61,7 +61,7 @@ def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_ba
 
 def get_git_prev_commit_hash(prev: int) -> str:
     try:
-        res: Any = git_repo.git.execute(['git', 'parse', f'HEAD~{prev}'])
+        res: Any = git_repo.git.execute(['git', 'rev-parse', f'HEAD~{prev}'])
         if bytes == type(res):
             try:
                 res = res.decode('utf-8')
@@ -70,7 +70,8 @@ def get_git_prev_commit_hash(prev: int) -> str:
         
         if type(res) == str:
             return res.strip()
-    except:
+    except Exception as e:
+        print(e)
         pass
     return 'HEAD'
 
