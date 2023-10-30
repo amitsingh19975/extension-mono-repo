@@ -113,9 +113,9 @@ def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path("."))
 
 def get_changed_files_from_module_helper(diagnostic: DiagnosticBase, module: Module, changed_source_files: List[Path], changed_files: MutableSet[DependencyFiles]) -> None:
     for file in module.files:
-        if file.srcPath in changed_source_files:
-            if not file.buildPath.exists():
-                diagnostic.add(DiagnosticLocation.from_module(module), DiagnosticKind.ERROR, f'Dependency Found but build file "{file.buildPath}" does not exist')
+        if file.src_path in changed_source_files:
+            if not file.build_path.exists():
+                diagnostic.add(DiagnosticLocation.from_module(module), DiagnosticKind.ERROR, f'Dependency Found but build file "{file.build_path}" does not exist')
                 continue
 
             changed_files.add(file)

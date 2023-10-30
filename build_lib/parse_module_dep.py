@@ -15,12 +15,15 @@ def try_read_json(path: Path) -> Optional[dict]:
 @dataclass
 class DependencyFiles:
     uuid: str
-    buildPath: Path
-    srcPath: Path
+    build_path: Path
+    src_path: Path
+    base_path: Path
 
     @staticmethod
     def from_json(base_path: Path, json_data: dict) -> 'DependencyFiles':
         module_path = base_path / 'module.json'
+        parent_path = base_path.relative_to(BASE_PATH)
+
         if 'uuid' not in json_data:
             raise ValueError(f'No uuid in dependency file: "{module_path}"\n{json_data}')
         
@@ -35,7 +38,7 @@ class DependencyFiles:
         if type(json_data['path']) != str:
             raise ValueError(f'type of "path" must be a "str", but found "{type(json_data["path"])}": {module_path}\n{json_data}')
         
-        buildPath = base_path / json_data['path']
+        buildPath = parent_path / Path(json_data['path'])
 
         srcPath = buildPath
 
@@ -49,11 +52,19 @@ class DependencyFiles:
             
             if not srcPath.is_file():
                 raise ValueError(f'Not a file: {srcPath}')
+            
+            srcPath = parent_path / Path(json_data['srcPath'])
 
-        return DependencyFiles(uuid = uuid, buildPath = buildPath, srcPath = srcPath)
+        return DependencyFiles(uuid = uuid, build_path = buildPath, src_path = srcPath, base_path = BASE_PATH)
     
     def __hash__(self) -> int:
-        return hash(self.srcPath)
+        return hash(self.src_path)
+    
+    def get_build_path(self) -> Path:
+        return self.base_path / self.build_path
+    
+    def get_src_path(self) -> Path:
+        return self.base_path / self.src_path
 
 @dataclass
 class DependencyCmds:
