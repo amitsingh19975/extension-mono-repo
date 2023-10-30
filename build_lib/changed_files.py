@@ -4,6 +4,7 @@ from .parse_module_dep import DependencyFiles, Module
 from .diagnostics import DiagnosticBase, DiagnosticKind, DiagnosticLocation
 from git import Repo
 from sys import argv
+from os import environ
 
 REPO_PATH = Path(__file__).parent.parent
 git_repo = Repo(REPO_PATH)
@@ -57,7 +58,7 @@ def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_ba
 
 def get_git_prev_commit_hash(prev: int) -> str:
     try:
-        res: Any = git_repo.git.execute(['git', 'rev-parse', f'HEAD~{prev}'])
+        res: Any = git_repo.git.execute(['git', 'parse', f'HEAD~{prev}'])
         if bytes == type(res):
             try:
                 res = res.decode('utf-8')
@@ -84,15 +85,22 @@ def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path("."))
 
     if last_hash_path.exists():
         with last_hash_path.open('r') as f:
-            last_hash = f.read().strip()
+            temp_hash = f.read().strip()
+            if temp_hash != '':
+                last_hash = temp_hash
         print(f'Last Hash: {last_hash}')
 
     files = get_git_changed_files_between_hashes(diagnostic, last_hash)
     for file in files:
         parse_space_separated_paths_escape(file, paths, resolved_base_path)
 
-    with last_hash_path.open('w') as f:
-        f.write(git_repo.head.commit.hexsha)
+
+    if environ.get('GITHUB_ACTIONS') == 'true':
+        print('Running on Github Actions, using last commit hash')
+        with last_hash_path.open('w') as f:
+            f.write(git_repo.head.commit.hexsha)
+    else:
+        print('Not running on Github Actions, using current commit hash')
 
     print(f'Found {len(paths)} changed files')
     print(f'Changed Files: {paths}')
