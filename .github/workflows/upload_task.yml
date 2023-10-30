@@ -30,6 +30,7 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: cache-artifact
+            path: cache/
           continue-on-error: true
 
         - name: Display Python version
