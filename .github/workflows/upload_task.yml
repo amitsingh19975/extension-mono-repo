@@ -9,6 +9,9 @@ on:
         - '.gitignore'
 jobs:
     build:
+        env:
+          ACTIONS_STEP_DEBUG: true
+
         runs-on: ubuntu-22.04
         steps:
         - uses: actions/checkout@v4
@@ -26,10 +29,6 @@ jobs:
             python-version: '>=3.11'
             architecture: 'x64'
         
-        - name: Download a single artifact
-          uses: actions/download-artifact@v3
-          continue-on-error: true
-
         - name: List Files
           run: ls -R
 
@@ -50,9 +49,12 @@ jobs:
         - name: Running Python script
           run: python main.py ${{ github.sha }}
 
-        - name: Upload a single artifact
-          uses: actions/upload-artifact@v3
+        - name: Push checksums to GitHub
+          uses: github-actions-x/commit@v2.9
           with:
-            name: cache-artifact
-            path: cache/
-          continue-on-error: true
+            files: |
+              checksums.json
+            name: 'GitHub Actions Bot'
+            push-branch: 'master'
+            commit-message: 'Update checksums.json'
+            github-token: ${{ secrets.GITHUB_TOKEN }}
