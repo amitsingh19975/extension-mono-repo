@@ -23,6 +23,12 @@ jobs:
           with:
             python-version: '>=3.11'
             architecture: 'x64'
+        
+        - uses: actions/upload-artifact@v3
+          with:
+            name: cache-artifact
+            path: cache/
+          continue-on-error: true
 
         - name: Display Python version
           run: python -c "import sys; print(sys.version)"
@@ -40,8 +46,3 @@ jobs:
         
         - name: Running Python script
           run: python main.py ${{ github.sha }}
-
-        - uses: actions/upload-artifact@v3
-          with:
-            name: cache-artifact
-            path: cache/
