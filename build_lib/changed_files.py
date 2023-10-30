@@ -9,7 +9,8 @@ REPO_PATH = Path(__file__).parent.parent
 git_repo = Repo(REPO_PATH)
 
 def get_git_changed_files_between_hashes(diagnostic: DiagnosticBase, last_hash: str) -> List[str]:
-    print(f'get_git_changed_files_between_hashes => Last Hash: {last_hash} | {argv[1]}')
+
+    print(f'get_git_changed_files_between_hashes => Last Hash: {last_hash} | {argv[1] if len(argv) > 1 else None}')
     current_hash = argv[1] if len(argv) > 1 else git_repo.head.commit.hexsha
     res: Any = git_repo.git.execute(['git', 'diff', '--name-only', last_hash, current_hash])
     if bytes == type(res):
@@ -54,17 +55,19 @@ def parse_space_separated_paths_escape(line: str, paths: List[Path], resolved_ba
         if path_buf.exists() and path_buf.is_file():
             paths.append(path_buf)
 
-def get_git_first_commit_hash() -> str:
-    res: Any = git_repo.git.execute(['git', 'rev-list', '--max-parents=0', 'HEAD'])
-    if bytes == type(res):
-        try:
-            res = res.decode('utf-8')
-        except UnicodeDecodeError:
-            return 'HEAD'
-    
-    if type(res) == str:
-        return res.strip()
+def get_git_prev_commit_hash(prev: int) -> str:
+    try:
+        res: Any = git_repo.git.execute(['git', 'rev-parse', f'HEAD~{prev}'])
+        if bytes == type(res):
+            try:
+                res = res.decode('utf-8')
+            except UnicodeDecodeError:
+                return 'HEAD'
         
+        if type(res) == str:
+            return res.strip()
+    except:
+        pass
     return 'HEAD'
 
 def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path(".")) -> List[Path]:    
@@ -76,7 +79,7 @@ def parse_changed_files(diagnostic: DiagnosticBase, base_path: Path = Path("."))
         cache_path.mkdir(parents = True)
 
     last_hash_path = cache_path / 'last_hash.txt'
-    last_hash = get_git_first_commit_hash()
+    last_hash = get_git_prev_commit_hash(3)
     print(f'First Hash: {last_hash}')
 
     if last_hash_path.exists():
