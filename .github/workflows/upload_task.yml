@@ -47,7 +47,7 @@ jobs:
           run: pip install -r requirements.txt
         
         - name: Running Python script
-          run: python main.py ${{ github.sha }}
+          run: python main.py
 
         - name: Push checksums to GitHub
           uses: github-actions-x/commit@v2.9
